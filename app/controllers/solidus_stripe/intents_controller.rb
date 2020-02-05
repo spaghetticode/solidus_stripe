@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-module Spree
-  class StripeController < Spree::BaseController
-    include Core::ControllerHelpers::Order
+module SolidusStripe
+  class IntentsController < Spree::BaseController
+    include Spree::Core::ControllerHelpers::Order
 
-    def confirm_payment
+    def confirm
       begin
         if params[:stripe_payment_method_id].present?
           intent = stripe.create_intent(

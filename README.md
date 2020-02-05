@@ -106,6 +106,16 @@ Check the Payment Intents section for setup details. Also, please
 refer to the official Stripe documentation for configuring your
 Stripe account to receive payments via Apple Pay.
 
+It's possible to pay with Apple Pay and Google Pay directly from the cart
+page. In order to enable the functionality, you have to override the
+view helper method `Spree::OrdersHelper#cart_checkout_payment_method` and
+make it return the `Spree::PaymentMethod::StripeCreditCard` instance that
+you want to use for the checkout. Of course, rules stated in the paragraph
+above must apply also for this payment method.
+
+Once the helper method is set, a view partial with the relevant HTML and
+JS code will be injected via `deface` in the cart page.
+
 
 Migrating from solidus_gateway
 ------------------------------
