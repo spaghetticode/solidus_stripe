@@ -17,28 +17,32 @@
   <script src="/assets/frontend/stripe_init.js"></script>
 
   <script>
-    Spree.stripePaymentMethod.config.payment_request.requestShipping = true;
-    var paymentRequest = setUpPaymentRequest(Spree.stripePaymentMethod.config.payment_request);
+    var paymentRequestConfig = Spree.stripePaymentMethod.config.payment_request;
 
-    function handlePayment(result) {
-      fetch('/stripe/shipping_address', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          shipping_address: result.shippingAddress,
-          shipping_options: result.shippingOptions,
-          authenticity_token: Spree.stripePaymentMethod.authToken
-        })
-      }).then(function(response) {
-        response.json().then(function(json) {
-          handleServerResponse(json, result);
-        })
-      });
-    };
+    if (typeof  paymentRequestConfig != 'undefined') {
+      paymentRequestConfig.requestShipping = true;
+      var paymentRequest = setUpPaymentRequest(paymentRequestConfig);
 
-    function submitPayment(payment) {
-      stripeTokenHandler(payment.paymentMethod);
-      Spree.stripePaymentMethod.form.submit();
+      function handlePayment(result) {
+        fetch('/stripe/shipping_address', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            shipping_address: result.shippingAddress,
+            shipping_options: result.shippingOptions,
+            authenticity_token: authToken
+          })
+        }).then(function(response) {
+          response.json().then(function(json) {
+            handleServerResponse(json, result);
+          })
+        });
+      };
+
+      function submitPayment(payment) {
+        stripeTokenHandler(payment.paymentMethod);
+        form.submit();
+      }
     }
   </script>
 <% end %>
