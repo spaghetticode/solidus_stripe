@@ -1,9 +1,10 @@
 <%= render 'spree/checkout/payment/v3/form_elements', payment_method: payment_method %>
 
 <script src="/assets/frontend/stripe_init.js"></script>
-<script src="/assets/frontend/elements_init.js"></script>
 
 <script>
+  var cardNumber = initElements();
+
   cardNumber.addEventListener('change', function(event) {
     if (event.error) {
       Spree.stripePaymentMethod.errorElement.text(event.error.message).show();

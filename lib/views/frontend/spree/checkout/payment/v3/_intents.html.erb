@@ -1,11 +1,11 @@
 <%= render 'spree/checkout/payment/v3/form_elements', payment_method: payment_method %>
 
 <script src="/assets/frontend/stripe_init.js"></script>
-<script src="/assets/frontend/elements_init.js"></script>
 <script src="/assets/frontend/intents_init.js"></script>
 
 <script>
- var paymentRequest = setUpPaymentRequest(Spree.stripePaymentMethod.config.payment_request);
+  var cardNumber = initElements();
+  var paymentRequest = setUpPaymentRequest(Spree.stripePaymentMethod.config.payment_request);
 
   Spree.stripePaymentMethod.form.bind('submit', function(event) {
     if (Spree.stripePaymentMethod.element.is(':visible')) {
