@@ -7,26 +7,26 @@
 
   cardNumber.addEventListener('change', function(event) {
     if (event.error) {
-      Spree.stripePaymentMethod.errorElement.text(event.error.message).show();
+      errorElement.text(event.error.message).show();
     } else {
-      Spree.stripePaymentMethod.errorElement.hide().text('');
+      errorElement.hide().text('');
     }
   });
 
-  Spree.stripePaymentMethod.form.bind('submit', function(event) {
-    if (Spree.stripePaymentMethod.element.is(':visible')) {
+  form.bind('submit', function(event) {
+    if (element.is(':visible')) {
       event.preventDefault();
 
-      Spree.Stripe.api.createToken(cardNumber).then(function(result) {
+      stripe.createToken(cardNumber).then(function(result) {
         if (result.error) {
-          Spree.stripePaymentMethod.errorElement.text(result.error.message).show();
+          errorElement.text(result.error.message).show();
           setTimeout(function() {
-            $.rails.enableElement(Spree.stripePaymentMethod.submitButton[0]);
-            Spree.stripePaymentMethod.submitButton.removeAttr('disabled').removeClass('disabled');
+            $.rails.enableElement(submitButton[0]);
+            submitButton.removeAttr('disabled').removeClass('disabled');
           }, 100);
         } else {
           stripeTokenHandler(result.token);
-          Spree.stripePaymentMethod.form[0].submit();
+          form[0].submit();
         }
       });
     }

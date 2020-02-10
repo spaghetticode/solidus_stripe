@@ -6,13 +6,13 @@
   var cardNumber = initElements();
   var paymentRequest = setUpPaymentRequest(Spree.stripePaymentMethod.config.payment_request);
 
-  Spree.stripePaymentMethod.form.bind('submit', function(event) {
-    if (Spree.stripePaymentMethod.element.is(':visible')) {
+  form.bind('submit', function(event) {
+    if (element.is(':visible')) {
       event.preventDefault();
 
-      Spree.stripePaymentMethod.errorElement.text('').hide();
+      errorElement.text('').hide();
 
-      Spree.Stripe.api.createPaymentMethod(
+      stripe.createPaymentMethod(
         'card',
         cardNumber
       ).then(function(result) {
@@ -34,7 +34,7 @@
         body: JSON.stringify({
           spree_payment_method_id: Spree.stripePaymentMethod.config.id,
           stripe_payment_method_id: payment.paymentMethod.id,
-          authenticity_token: Spree.stripePaymentMethod.authToken
+          authenticity_token: authToken
         })
       }).then(function(response) {
         response.json().then(function(json) {
@@ -45,6 +45,6 @@
   };
 
   function submitPayment(_payment) {
-    Spree.stripePaymentMethod.form.unbind('submit').submit();
+    form.unbind('submit').submit();
   }
 </script>
