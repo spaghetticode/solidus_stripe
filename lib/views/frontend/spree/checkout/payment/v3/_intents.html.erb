@@ -13,7 +13,7 @@
 
       Spree.stripePaymentMethod.errorElement.text('').hide();
 
-      stripe.createPaymentMethod(
+      Spree.Stripe.api.createPaymentMethod(
         'card',
         cardNumber
       ).then(function(result) {
