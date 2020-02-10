@@ -2,12 +2,14 @@
   <% payment_method = Spree::PaymentMethod.last %>
 
   <div id="payment-request" style="clear:both; margin: 130px 0;">
-    <%= form_tag update_checkout_path(:payment), method: :patch, id: "payment_method_#{payment_method.id}" do %>
-      <%= hidden_field_tag "order[payments_attributes][][payment_method_id]", payment_method.id %>
+    <%= form_tag update_checkout_path(:payment), method: :patch do %>
+      <div id="payment_method_<%= payment_method.id %>">
+        <%= hidden_field_tag "order[payments_attributes][][payment_method_id]", payment_method.id %>
 
-      <div id="payment-request-button" data-stripe-config="<%= payment_method.stripe_config(current_order).to_json %>"></div>
+        <div id="payment-request-button" data-stripe-config="<%= payment_method.stripe_config(current_order).to_json %>"></div>
 
-      <div id="card-errors" class='errorExplanation' role="alert" style="display: none"></div>
+        <div id="card-errors" class='errorExplanation' role="alert" style="display: none"></div>
+      </div>
     <% end %>
   </div>
 
@@ -36,7 +38,7 @@
 
     function submitPayment(payment) {
       stripeTokenHandler(payment.paymentMethod);
-      Spree.stripePaymentMethod.element.submit();
+      Spree.stripePaymentMethod.form.submit();
     }
   </script>
 <% end %>
