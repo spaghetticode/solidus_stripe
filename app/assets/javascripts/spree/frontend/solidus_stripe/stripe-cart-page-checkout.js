@@ -23,6 +23,7 @@ SolidusStripe.CartPageCheckout.prototype.showError = function(error) {
 
 SolidusStripe.CartPageCheckout.prototype.submitPayment = function(payment) {
   var showError = this.showError.bind(this);
+  var prTokenHandler = this.prTokenHandler.bind(this);
 
   $.ajax({
     url: $('[data-submit-url]').data('submit-url'),
@@ -31,7 +32,7 @@ SolidusStripe.CartPageCheckout.prototype.submitPayment = function(payment) {
     },
     type: 'PATCH',
     contentType: 'application/json',
-    data: JSON.stringify(this.prTokenHandler(payment.paymentMethod)),
+    data: JSON.stringify(prTokenHandler(payment.paymentMethod)),
     success: function() {
       window.location = $('[data-complete-url]').data('complete-url');
     },
@@ -41,22 +42,60 @@ SolidusStripe.CartPageCheckout.prototype.submitPayment = function(payment) {
   });
 };
 
-SolidusStripe.CartPageCheckout.prototype.onPrPayment = function(result) {
+SolidusStripe.CartPageCheckout.prototype.onPrPayment = function(payment) {
+  var authToken = this.authToken;
+  var showError = this.showError.bind(this);
+  var completePaymentRequest = this.completePaymentRequest.bind(this);
+
+
   var handleServerResponse = this.handleServerResponse.bind(this);
+  var stripe = this.stripe;
+  var config = this.config;
+
 
   fetch('/stripe/update_order', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      shipping_address: result.shippingAddress,
-      shipping_option: result.shippingOption,
-      email: result.payerEmail,
-      name: result.payerName,
-      authenticity_token: this.authToken
+      shipping_address: payment.shippingAddress,
+      shipping_option: payment.shippingOption,
+      email: payment.payerEmail,
+      name: payment.payerName,
+      authenticity_token: authToken
     })
   }).then(function(response) {
-    response.json().then(function(json) {
-      handleServerResponse(json, result);
+    response.json().then(function(result) {
+     if (result.error) {
+        completePaymentRequest(payment, 'fail');
+        showError(result.error);
+      } else {
+
+
+
+        if (payment.error) {
+          this.showError(payment.error.message);
+        } else {
+          fetch('/stripe/confirm_intents', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              form_data: payment.shippingAddress,
+              spree_payment_method_id: config.id,
+              stripe_payment_method_id: payment.paymentMethod.id,
+              authenticity_token: authToken
+            })
+          }).then(function(response) {
+            response.json().then(function(response) {
+              handleServerResponse(response, payment)
+            })
+          });
+        }
+
+
+
+      }
     })
   });
 };

@@ -6,12 +6,14 @@ module SolidusStripe
 
     delegate :request, :current_order, :params, to: :controller
 
-    def initialize(intent, stripe, controller)
-      @intent, @stripe, @controller = intent, stripe, controller
+    def initialize(intent_id, stripe, controller)
+      @stripe, @controller = stripe, controller
+      @intent = stripe.show_intent(intent_id, {})
     end
 
     def call
       invalidate_previous_payment_intents_payments
+
       payment = create_payment
       description = "Solidus Order ID: #{payment.gateway_order_identifier}"
       stripe.update_intent(nil, response['id'], nil, description: description)
@@ -39,7 +41,6 @@ module SolidusStripe
 
     def payment_params
       card = response['charges']['data'][0]['payment_method_details']['card']
-      address_attributes = form_data['payment_source'][stripe.id.to_s]['address_attributes']
 
       {
         payments_attributes: [{
@@ -52,7 +53,7 @@ module SolidusStripe
             cc_type: card['brand'],
             gateway_payment_profile_id: response['payment_method'],
             last_digits: card['last4'],
-            name: current_order.bill_address.full_name,
+            name: address_full_name,
             address_attributes: address_attributes
           }
         }]
@@ -64,7 +65,20 @@ module SolidusStripe
     end
 
     def form_data
-      Rack::Utils.parse_nested_query(params[:form_data])
+      params[:form_data]
+    end
+
+    def address_attributes
+      if form_data.is_a?(String)
+        data = Rack::Utils.parse_nested_query(form_data)
+        data['payment_source'][stripe.id.to_s]['address_attributes']
+      else
+        SolidusStripe::AddressFromParamsService.new(form_data).call.attributes
+      end
+    end
+
+    def address_full_name
+      current_order.bill_address&.full_name || form_data[:recipient]
     end
   end
 end
